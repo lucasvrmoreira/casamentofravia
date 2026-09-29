@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fotos - Casamento Frávia</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      min-height: 100vh;
+      background: linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.45)), url('/capa.jpeg') center top/cover no-repeat fixed;
+      font-family: 'Georgia', serif;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      padding: 10px;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.88);
+      border-radius: 12px;
+      padding: 10px 14px; /* Ultra-compacto */
+      max-width: 290px;   /* Largura bem reduzida */
+      width: 100%;
+      box-shadow: 0 8px 40px rgba(0, 0, 0, 0.25);
+      text-align: center;
+      backdrop-filter: blur(6px);
+    }
+
+    .flores {
+      font-size: 18px;
+      margin-bottom: 0px;
+    }
+
+    h1 {
+      font-size: 16px;
+      color: #5a3e2b;
+      margin-bottom: 1px;
+      font-weight: normal;
+      letter-spacing: 0.5px;
+    }
+
+    .subtitle {
+      color: #9c7c5e;
+      font-size: 11px;
+      margin-bottom: 8px;
+      font-style: italic;
+    }
+
+    .drop-area {
+      border: 1.5px dashed #c9a87c;
+      border-radius: 8px;
+      padding: 6px 8px;
+      cursor: pointer;
+      transition: background 0.2s;
+      margin-bottom: 8px;
+    }
+
+    .drop-area:hover {
+      background: #fdf6ee;
+    }
+
+    .drop-area .icon {
+      font-size: 18px;
+      margin-bottom: 2px;
+    }
+
+    .drop-area p {
+      color: #9c7c5e;
+      font-size: 10px;
+      line-height: 1.2;
+    }
+
+    .drop-area strong {
+      color: #5a3e2b;
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+
+    #preview {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-bottom: 8px;
+      justify-content: center;
+    }
+
+    #preview img {
+      width: 45px;
+      height: 45px;
+      object-fit: cover;
+      border-radius: 4px;
+      border: 1px solid #e8d5c0;
+    }
+
+    .btn {
+      background: #c9a87c;
+      color: white;
+      border: none;
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-family: 'Georgia', serif;
+      cursor: pointer;
+      transition: background 0.2s;
+      width: 100%;
+    }
+
+    .btn:hover {
+      background: #b8916a;
+    }
+
+    .btn:disabled {
+      background: #ddd;
+      cursor: not-allowed;
+    }
+
+    #status {
+      margin-top: 4px;
+      font-size: 11px;
+      min-height: 14px;
+    }
+
+    .success {
+      color: #5a8a5a;
+    }
+
+    .error {
+      color: #c0392b;
+    }
+
+    .loading {
+      color: #9c7c5e;
+      font-style: italic;
+    }
+
+    .rodape {
+      margin-top: 6px;
+      color: #c9a87c;
+      font-size: 10px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="card">
+    <div class="flores">🌸</div>
+    <h1>Casamento Frávia</h1>
+    <p class="subtitle">Compartilhe seus momentos especiais conosco 💛</p>
+
+    <div class="drop-area" id="dropArea" onclick="document.getElementById('fileInput').click()">
+      <div class="icon">📷</div>
+      <p><strong>Clique aqui</strong> ou arraste suas fotos</p>
+      <p>JPG, PNG, HEIC · até 20 fotos por vez</p>
+    </div>
+
+    <input type="file" id="fileInput" accept="image/*" multiple />
+
+    <div id="preview"></div>
+
+    <button class="btn" id="btnEnviar" onclick="enviar()" disabled>
+      Enviar fotos 🌸
+    </button>
+
+    <div id="status"></div>
+
+    <div class="rodape">✨ Suas fotos serão guardadas com carinho ✨</div>
+  </div>
+
+  <script>
+    const fileInput = document.getElementById('fileInput');
+    const preview = document.getElementById('preview');
+    const btnEnviar = document.getElementById('btnEnviar');
+    const status = document.getElementById('status');
+    const dropArea = document.getElementById('dropArea');
+
+    fileInput.addEventListener('change', mostrarPreview);
+
+    dropArea.addEventListener('dragover', e => { e.preventDefault(); dropArea.style.background = '#fdf6ee'; });
+    dropArea.addEventListener('dragleave', () => { dropArea.style.background = ''; });
+    dropArea.addEventListener('drop', e => {
+      e.preventDefault();
+      dropArea.style.background = '';
+      fileInput.files = e.dataTransfer.files;
+      mostrarPreview();
+    });
+
+    function mostrarPreview() {
+      preview.innerHTML = '';
+      const files = Array.from(fileInput.files).slice(0, 20);
+      files.forEach(file => {
+        const img = document.createElement('img');
+        img.src = URL.createObjectURL(file);
+        preview.appendChild(img);
+      });
+      btnEnviar.disabled = files.length === 0;
+      status.textContent = '';
+    }
+
+    async function enviar() {
+      const files = Array.from(fileInput.files).slice(0, 20);
+      if (!files.length) return;
+
+      btnEnviar.disabled = true;
+      status.className = 'loading';
+      status.textContent = 'Enviando suas fotos... 🌸';
+
+      const formData = new FormData();
+      files.forEach(f => formData.append('files', f));
+
+      try {
+        const res = await fetch('/upload', { method: 'POST', body: formData });
+        const data = await res.json();
+
+        if (data.success) {
+          status.className = 'success';
+          status.textContent = `✅ ${data.total} foto(s) enviada(s) com sucesso!`;
+          preview.innerHTML = '';
+          fileInput.value = '';
+        } else {
+          throw new Error('Erro no envio');
+        }
+      } catch (err) {
+        status.className = 'error';
+        status.textContent = '❌ Erro ao enviar. Tente novamente.';
+      } finally {
+        btnEnviar.disabled = false;
+      }
+    }
+  </script>
+</body>
+
+</html>
