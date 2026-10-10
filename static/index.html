@@ -8,255 +8,189 @@
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
   <link rel="manifest" href="/site.webmanifest">
-  <title>Fotos - Casamento Frávia</title>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=Lato:wght@300;400&display=swap" rel="stylesheet">
+  <title>Momentos</title>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
     body {
       min-height: 100vh;
-      background: linear-gradient(rgba(0,0,0,0.38), rgba(0,0,0,0.38)),
-                  url('/capa.jpeg') center center/cover no-repeat fixed;
-      font-family: 'Lato', sans-serif;
+      background: linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.45)), url('/capa.jpeg') center top/cover no-repeat fixed;
+      font-family: 'Georgia', serif;
       display: flex;
-      align-items: center;
+      align-items: flex-end;
       justify-content: center;
-      padding: 20px;
+      padding: 10px;
     }
 
     .card {
-      background: rgba(255, 252, 248, 0.92);
-      border-radius: 4px;
-      padding: 32px 28px 24px;
-      max-width: 340px;
+      background: rgba(255, 255, 255, 0.88);
+      border-radius: 12px;
+      padding: 10px 14px;
+      /* Ultra-compacto */
+      max-width: 290px;
+      /* Largura bem reduzida */
       width: 100%;
-      box-shadow: 0 12px 48px rgba(0,0,0,0.22);
+      box-shadow: 0 8px 40px rgba(0, 0, 0, 0.25);
       text-align: center;
-      backdrop-filter: blur(8px);
-      border: 1px solid rgba(201, 168, 124, 0.35);
+      backdrop-filter: blur(6px);
     }
 
-    .monogram {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 28px;
-      font-weight: 300;
-      color: #c9a87c;
-      letter-spacing: 6px;
-      margin-bottom: 4px;
-    }
-
-    .divider {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin: 8px 0 12px;
-    }
-
-    .divider::before,
-    .divider::after {
-      content: '';
-      flex: 1;
-      height: 1px;
-      background: linear-gradient(to right, transparent, #c9a87c, transparent);
-      opacity: 0.6;
-    }
-
-    .divider span {
-      color: #c9a87c;
-      font-size: 12px;
-      letter-spacing: 2px;
+    .flores {
+      font-size: 18px;
+      margin-bottom: 0px;
     }
 
     h1 {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 22px;
-      color: #4a3220;
-      font-weight: 300;
-      letter-spacing: 1px;
-      margin-bottom: 2px;
+      font-size: 16px;
+      color: #5a3e2b;
+      margin-bottom: 1px;
+      font-weight: normal;
+      letter-spacing: 0.5px;
     }
 
     .subtitle {
       color: #9c7c5e;
       font-size: 11px;
-      margin-bottom: 20px;
-      font-weight: 300;
-      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+      font-style: italic;
     }
 
     .drop-area {
-      border: 1px dashed rgba(201, 168, 124, 0.7);
-      border-radius: 3px;
-      padding: 16px 12px;
+      border: 1.5px dashed #c9a87c;
+      border-radius: 8px;
+      padding: 6px 8px;
       cursor: pointer;
-      transition: all 0.2s;
-      margin-bottom: 12px;
-      background: rgba(253, 246, 238, 0.5);
+      transition: background 0.2s;
+      margin-bottom: 8px;
     }
 
     .drop-area:hover {
-      background: rgba(253, 246, 238, 0.9);
-      border-color: #c9a87c;
+      background: #fdf6ee;
     }
 
     .drop-area .icon {
-      font-size: 22px;
-      margin-bottom: 6px;
-      opacity: 0.8;
+      font-size: 18px;
+      margin-bottom: 2px;
     }
 
     .drop-area p {
       color: #9c7c5e;
-      font-size: 11px;
-      line-height: 1.5;
-      font-weight: 300;
+      font-size: 10px;
+      line-height: 1.2;
     }
 
     .drop-area strong {
       color: #5a3e2b;
-      font-weight: 400;
     }
 
-    input[type="file"] { display: none; }
+    input[type="file"] {
+      display: none;
+    }
 
     #preview {
       display: flex;
       flex-wrap: wrap;
       gap: 4px;
-      margin-bottom: 12px;
+      margin-bottom: 8px;
       justify-content: center;
     }
 
     #preview img {
-      width: 48px;
-      height: 48px;
+      width: 45px;
+      height: 45px;
       object-fit: cover;
-      border-radius: 2px;
-      border: 1px solid rgba(201, 168, 124, 0.4);
-      transition: opacity 0.3s;
-    }
-
-    #preview img.enviada {
-      border-color: #6a8f6a;
-      opacity: 0.6;
+      border-radius: 4px;
+      border: 1px solid #e8d5c0;
     }
 
     .btn {
       background: #c9a87c;
       color: white;
       border: none;
-      padding: 10px 20px;
-      border-radius: 2px;
-      font-size: 11px;
-      font-family: 'Lato', sans-serif;
-      font-weight: 400;
-      letter-spacing: 2px;
-      text-transform: uppercase;
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-family: 'Georgia', serif;
       cursor: pointer;
       transition: background 0.2s;
       width: 100%;
     }
 
-    .btn:hover { background: #b8916a; }
-    .btn:disabled { background: #ddd; cursor: not-allowed; letter-spacing: 1px; }
-
-    .progress-wrap {
-      margin-bottom: 10px;
-      display: none;
+    .btn:hover {
+      background: #b8916a;
     }
 
-    .progress-bar-bg {
-      height: 3px;
-      background: rgba(201, 168, 124, 0.2);
-      border-radius: 2px;
-      overflow: hidden;
-      margin-bottom: 6px;
-    }
-
-    .progress-bar-fill {
-      height: 100%;
-      background: #c9a87c;
-      border-radius: 2px;
-      transition: width 0.4s ease;
-      width: 0%;
-    }
-
-    .progress-text {
-      font-size: 11px;
-      color: #9c7c5e;
-      font-weight: 300;
-      font-style: italic;
+    .btn:disabled {
+      background: #ddd;
+      cursor: not-allowed;
     }
 
     #status {
-      margin-top: 10px;
+      margin-top: 4px;
       font-size: 11px;
-      min-height: 16px;
-      font-weight: 300;
+      min-height: 14px;
     }
 
-    .success { color: #6a8f6a; }
-    .error   { color: #c0392b; }
+    .success {
+      color: #5a8a5a;
+    }
+
+    .error {
+      color: #c0392b;
+    }
+
+    .loading {
+      color: #9c7c5e;
+      font-style: italic;
+    }
 
     .rodape {
-      margin-top: 18px;
+      margin-top: 6px;
       color: #c9a87c;
       font-size: 10px;
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-      opacity: 0.8;
     }
   </style>
 </head>
 
 <body>
   <div class="card">
-    <div class="monogram">F & R</div>
-
-    <div class="divider"><span>✦</span></div>
-
-    <h1>Casamento Frávia</h1>
-    <p class="subtitle">Compartilhe seus momentos conosco</p>
+    <div class="flores">🌸</div>
+    <h1>Casamento Flavia e Lucas</h1>
+    <p class="subtitle">Compartilhe seus momentos especiais conosco 💛</p>
 
     <div class="drop-area" id="dropArea" onclick="document.getElementById('fileInput').click()">
       <div class="icon">📷</div>
       <p><strong>Clique aqui</strong> ou arraste suas fotos</p>
-      <p>JPG · PNG · HEIC &nbsp;·&nbsp; até 20 fotos</p>
+      <p>JPG, PNG, HEIC · até 20 fotos por vez</p>
     </div>
 
     <input type="file" id="fileInput" accept="image/*" multiple />
 
     <div id="preview"></div>
 
-    <div class="progress-wrap" id="progressWrap">
-      <div class="progress-bar-bg">
-        <div class="progress-bar-fill" id="progressFill"></div>
-      </div>
-      <div class="progress-text" id="progressText"></div>
-    </div>
-
     <button class="btn" id="btnEnviar" onclick="enviar()" disabled>
-      Enviar fotos
+      Enviar fotos 🌸
     </button>
 
     <div id="status"></div>
 
-    <div class="rodape">✦ &nbsp; suas fotos serão guardadas com carinho &nbsp; ✦</div>
+    <div class="rodape">✨ Suas fotos serão guardadas com carinho ✨</div>
   </div>
 
   <script>
-    const fileInput    = document.getElementById('fileInput');
-    const preview      = document.getElementById('preview');
-    const btnEnviar    = document.getElementById('btnEnviar');
-    const status       = document.getElementById('status');
-    const dropArea     = document.getElementById('dropArea');
-    const progressWrap = document.getElementById('progressWrap');
-    const progressFill = document.getElementById('progressFill');
-    const progressText = document.getElementById('progressText');
+    const fileInput = document.getElementById('fileInput');
+    const preview = document.getElementById('preview');
+    const btnEnviar = document.getElementById('btnEnviar');
+    const status = document.getElementById('status');
+    const dropArea = document.getElementById('dropArea');
 
     fileInput.addEventListener('change', mostrarPreview);
 
-    dropArea.addEventListener('dragover',  e => { e.preventDefault(); dropArea.style.background = 'rgba(253,246,238,0.9)'; });
+    dropArea.addEventListener('dragover', e => { e.preventDefault(); dropArea.style.background = '#fdf6ee'; });
     dropArea.addEventListener('dragleave', () => { dropArea.style.background = ''; });
     dropArea.addEventListener('drop', e => {
       e.preventDefault();
@@ -275,7 +209,6 @@
       });
       btnEnviar.disabled = files.length === 0;
       status.textContent = '';
-      progressWrap.style.display = 'none';
     }
 
     async function enviar() {
@@ -283,74 +216,30 @@
       if (!files.length) return;
 
       btnEnviar.disabled = true;
-      status.textContent = '';
-      status.className = '';
+      status.className = 'loading';
+      status.textContent = 'Enviando suas fotos... 🌸';
 
-      // Busca assinatura do servidor
-      let signData;
+      const formData = new FormData();
+      files.forEach(f => formData.append('files', f));
+
       try {
-        const res = await fetch('/sign');
-        signData = await res.json();
-      } catch {
-        status.className = 'error';
-        status.textContent = '✕ Erro ao conectar. Tente novamente.';
-        btnEnviar.disabled = false;
-        return;
-      }
+        const res = await fetch('/upload', { method: 'POST', body: formData });
+        const data = await res.json();
 
-      const { timestamp, signature, api_key, cloud_name, folder } = signData;
-      const uploadUrl = `https://api.cloudinary.com/v1_1/${cloud_name}/image/upload`;
-
-      progressWrap.style.display = 'block';
-      const imgs = preview.querySelectorAll('img');
-      let enviadas = 0;
-      let erros = 0;
-
-      for (let i = 0; i < files.length; i++) {
-        progressText.textContent = `Enviando ${i + 1} de ${files.length}…`;
-        progressFill.style.width = `${Math.round((i / files.length) * 100)}%`;
-
-        const formData = new FormData();
-        formData.append('file', files[i]);
-        formData.append('api_key', api_key);
-        formData.append('timestamp', timestamp);
-        formData.append('signature', signature);
-        formData.append('folder', folder);
-
-        try {
-          const res = await fetch(uploadUrl, { method: 'POST', body: formData });
-          if (res.ok) {
-            enviadas++;
-            if (imgs[i]) imgs[i].classList.add('enviada');
-          } else {
-            erros++;
-          }
-        } catch {
-          erros++;
+        if (data.success) {
+          status.className = 'success';
+          status.textContent = `✅ ${data.total} foto(s) enviada(s) com sucesso!`;
+          preview.innerHTML = '';
+          fileInput.value = '';
+        } else {
+          throw new Error('Erro no envio');
         }
-      }
-
-      progressFill.style.width = '100%';
-      progressText.textContent = '';
-      setTimeout(() => {
-        progressWrap.style.display = 'none';
-        progressFill.style.width = '0%';
-      }, 800);
-
-      if (erros === 0) {
-        status.className = 'success';
-        status.textContent = `✓ ${enviadas} foto(s) enviada(s) com sucesso!`;
-        preview.innerHTML = '';
-        fileInput.value = '';
-      } else if (enviadas > 0) {
-        status.className = 'success';
-        status.textContent = `✓ ${enviadas} enviada(s) · ${erros} com erro. Tente reenviar.`;
-      } else {
+      } catch (err) {
         status.className = 'error';
-        status.textContent = '✕ Erro ao enviar. Tente novamente.';
+        status.textContent = '❌ Erro ao enviar. Tente novamente.';
+      } finally {
+        btnEnviar.disabled = false;
       }
-
-      btnEnviar.disabled = false;
     }
   </script>
 </body>
