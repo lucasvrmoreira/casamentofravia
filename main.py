@@ -1,10 +1,12 @@
 import os
-from fastapi import FastAPI, UploadFile, File, HTTPException
+import time
+import hashlib
+import hmac
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from dotenv import load_dotenv
 import cloudinary
-import cloudinary.uploader
 
 load_dotenv()
 
@@ -23,31 +25,34 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+CLOUD_NAME = os.getenv("CLOUDINARY_CLOUD_NAME")
+API_KEY = os.getenv("CLOUDINARY_API_KEY")
+API_SECRET = os.getenv("CLOUDINARY_API_SECRET")
+FOLDER = "casamento-fravia"
+
 
 @app.get("/health")
 def health():
     return {"status": "ok"}
 
 
-@app.post("/upload")
-async def upload_files(files: list[UploadFile] = File(...)):
-    uploaded = []
+@app.get("/sign")
+def sign():
+    timestamp = int(time.time())
+    params = f"folder={FOLDER}&timestamp={timestamp}"
+    signature = hmac.new(
+        API_SECRET.encode(),
+        params.encode(),
+        hashlib.sha1
+    ).hexdigest()
 
-    for file in files:
-        if not file.content_type.startswith("image/"):
-            raise HTTPException(status_code=400, detail=f"'{file.filename}' não é uma imagem.")
-
-        content = await file.read()
-
-        result = cloudinary.uploader.upload(
-            content,
-            folder="casamento-fravia",
-            resource_type="image",
-        )
-
-        uploaded.append({"url": result["secure_url"], "original": file.filename})
-
-    return {"success": True, "uploaded": uploaded, "total": len(uploaded)}
+    return {
+        "timestamp": timestamp,
+        "signature": signature,
+        "api_key": API_KEY,
+        "cloud_name": CLOUD_NAME,
+        "folder": FOLDER,
+    }
 
 
 app.mount("/", StaticFiles(directory="static", html=True), name="static")
