@@ -10,11 +10,7 @@
   <link rel="manifest" href="/site.webmanifest">
   <title>Momentos</title>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
       min-height: 100vh;
@@ -30,19 +26,14 @@
       background: rgba(255, 255, 255, 0.88);
       border-radius: 12px;
       padding: 10px 14px;
-      /* Ultra-compacto */
       max-width: 290px;
-      /* Largura bem reduzida */
       width: 100%;
       box-shadow: 0 8px 40px rgba(0, 0, 0, 0.25);
       text-align: center;
       backdrop-filter: blur(6px);
     }
 
-    .flores {
-      font-size: 18px;
-      margin-bottom: 0px;
-    }
+    .flores { font-size: 18px; margin-bottom: 0px; }
 
     h1 {
       font-size: 16px;
@@ -68,28 +59,12 @@
       margin-bottom: 8px;
     }
 
-    .drop-area:hover {
-      background: #fdf6ee;
-    }
+    .drop-area:hover { background: #fdf6ee; }
+    .drop-area .icon { font-size: 18px; margin-bottom: 2px; }
+    .drop-area p { color: #9c7c5e; font-size: 10px; line-height: 1.2; }
+    .drop-area strong { color: #5a3e2b; }
 
-    .drop-area .icon {
-      font-size: 18px;
-      margin-bottom: 2px;
-    }
-
-    .drop-area p {
-      color: #9c7c5e;
-      font-size: 10px;
-      line-height: 1.2;
-    }
-
-    .drop-area strong {
-      color: #5a3e2b;
-    }
-
-    input[type="file"] {
-      display: none;
-    }
+    input[type="file"] { display: none; }
 
     #preview {
       display: flex;
@@ -105,6 +80,12 @@
       object-fit: cover;
       border-radius: 4px;
       border: 1px solid #e8d5c0;
+      transition: opacity 0.3s;
+    }
+
+    #preview img.enviada {
+      border-color: #7ab87a;
+      opacity: 0.55;
     }
 
     .btn {
@@ -120,39 +101,41 @@
       width: 100%;
     }
 
-    .btn:hover {
-      background: #b8916a;
+    .btn:hover { background: #b8916a; }
+    .btn:disabled { background: #ddd; cursor: not-allowed; }
+
+    .progress-wrap {
+      margin-bottom: 6px;
+      display: none;
     }
 
-    .btn:disabled {
-      background: #ddd;
-      cursor: not-allowed;
+    .progress-bar-bg {
+      height: 3px;
+      background: rgba(201, 168, 124, 0.2);
+      border-radius: 2px;
+      overflow: hidden;
+      margin-bottom: 4px;
     }
 
-    #status {
-      margin-top: 4px;
-      font-size: 11px;
-      min-height: 14px;
+    .progress-bar-fill {
+      height: 100%;
+      background: #c9a87c;
+      border-radius: 2px;
+      transition: width 0.3s ease;
+      width: 0%;
     }
 
-    .success {
-      color: #5a8a5a;
-    }
-
-    .error {
-      color: #c0392b;
-    }
-
-    .loading {
+    .progress-text {
+      font-size: 10px;
       color: #9c7c5e;
       font-style: italic;
     }
 
-    .rodape {
-      margin-top: 6px;
-      color: #c9a87c;
-      font-size: 10px;
-    }
+    #status { margin-top: 4px; font-size: 11px; min-height: 14px; }
+    .success { color: #5a8a5a; }
+    .error { color: #c0392b; }
+
+    .rodape { margin-top: 6px; color: #c9a87c; font-size: 10px; }
   </style>
 </head>
 
@@ -172,6 +155,13 @@
 
     <div id="preview"></div>
 
+    <div class="progress-wrap" id="progressWrap">
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill" id="progressFill"></div>
+      </div>
+      <div class="progress-text" id="progressText"></div>
+    </div>
+
     <button class="btn" id="btnEnviar" onclick="enviar()" disabled>
       Enviar fotos 🌸
     </button>
@@ -182,11 +172,14 @@
   </div>
 
   <script>
-    const fileInput = document.getElementById('fileInput');
-    const preview = document.getElementById('preview');
-    const btnEnviar = document.getElementById('btnEnviar');
-    const status = document.getElementById('status');
-    const dropArea = document.getElementById('dropArea');
+    const fileInput    = document.getElementById('fileInput');
+    const preview      = document.getElementById('preview');
+    const btnEnviar    = document.getElementById('btnEnviar');
+    const status       = document.getElementById('status');
+    const dropArea     = document.getElementById('dropArea');
+    const progressWrap = document.getElementById('progressWrap');
+    const progressFill = document.getElementById('progressFill');
+    const progressText = document.getElementById('progressText');
 
     fileInput.addEventListener('change', mostrarPreview);
 
@@ -209,6 +202,7 @@
       });
       btnEnviar.disabled = files.length === 0;
       status.textContent = '';
+      progressWrap.style.display = 'none';
     }
 
     async function enviar() {
@@ -216,30 +210,73 @@
       if (!files.length) return;
 
       btnEnviar.disabled = true;
-      status.className = 'loading';
-      status.textContent = 'Enviando suas fotos... 🌸';
+      status.textContent = '';
+      status.className = '';
 
-      const formData = new FormData();
-      files.forEach(f => formData.append('files', f));
-
+      let signData;
       try {
-        const res = await fetch('/upload', { method: 'POST', body: formData });
-        const data = await res.json();
+        const res = await fetch('/sign');
+        signData = await res.json();
+      } catch {
+        status.className = 'error';
+        status.textContent = '❌ Erro ao conectar. Tente novamente.';
+        btnEnviar.disabled = false;
+        return;
+      }
 
-        if (data.success) {
-          status.className = 'success';
-          status.textContent = `✅ ${data.total} foto(s) enviada(s) com sucesso!`;
-          preview.innerHTML = '';
-          fileInput.value = '';
-        } else {
-          throw new Error('Erro no envio');
+      const { timestamp, signature, api_key, cloud_name, folder } = signData;
+      const uploadUrl = `https://api.cloudinary.com/v1_1/${cloud_name}/image/upload`;
+
+      progressWrap.style.display = 'block';
+      const imgs = preview.querySelectorAll('img');
+      let enviadas = 0;
+      let erros = 0;
+
+      for (let i = 0; i < files.length; i++) {
+        progressText.textContent = `Enviando ${i + 1} de ${files.length}... 🌸`;
+        progressFill.style.width = `${Math.round((i / files.length) * 100)}%`;
+
+        const formData = new FormData();
+        formData.append('file', files[i]);
+        formData.append('api_key', api_key);
+        formData.append('timestamp', timestamp);
+        formData.append('signature', signature);
+        formData.append('folder', folder);
+
+        try {
+          const res = await fetch(uploadUrl, { method: 'POST', body: formData });
+          if (res.ok) {
+            enviadas++;
+            if (imgs[i]) imgs[i].classList.add('enviada');
+          } else {
+            erros++;
+          }
+        } catch {
+          erros++;
         }
-      } catch (err) {
+      }
+
+      progressFill.style.width = '100%';
+      progressText.textContent = '';
+      setTimeout(() => {
+        progressWrap.style.display = 'none';
+        progressFill.style.width = '0%';
+      }, 800);
+
+      if (erros === 0) {
+        status.className = 'success';
+        status.textContent = `✅ ${enviadas} foto(s) enviada(s) com sucesso!`;
+        preview.innerHTML = '';
+        fileInput.value = '';
+      } else if (enviadas > 0) {
+        status.className = 'success';
+        status.textContent = `✅ ${enviadas} enviada(s) · ${erros} com erro. Tente reenviar.`;
+      } else {
         status.className = 'error';
         status.textContent = '❌ Erro ao enviar. Tente novamente.';
-      } finally {
-        btnEnviar.disabled = false;
       }
+
+      btnEnviar.disabled = false;
     }
   </script>
 </body>

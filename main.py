@@ -1,7 +1,6 @@
 import os
 import time
 import hashlib
-import hmac
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -39,12 +38,8 @@ def health():
 @app.get("/sign")
 def sign():
     timestamp = int(time.time())
-    params = f"folder={FOLDER}&timestamp={timestamp}"
-    signature = hmac.new(
-        API_SECRET.encode(),
-        params.encode(),
-        hashlib.sha1
-    ).hexdigest()
+    params_to_sign = f"folder={FOLDER}&timestamp={timestamp}{API_SECRET}"
+    signature = hashlib.sha1(params_to_sign.encode()).hexdigest()
 
     return {
         "timestamp": timestamp,
