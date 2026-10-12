@@ -1,10 +1,10 @@
 import os
 import time
 import hashlib
-from functools import lru_cache
 from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from dotenv import load_dotenv
 import cloudinary
 import cloudinary.api
@@ -31,8 +31,8 @@ API_KEY    = os.getenv("CLOUDINARY_API_KEY")
 API_SECRET = os.getenv("CLOUDINARY_API_SECRET")
 FOLDER     = "casamento-fravia"
 
-# Cache simples em memória: 60 segundos
 _cache = {"data": None, "ts": 0}
+
 
 @app.get("/health")
 def health():
@@ -56,8 +56,6 @@ def sign():
 @app.get("/fotos")
 def listar_fotos(cursor: str = Query(default=None)):
     global _cache
-
-    # Cache de 60s só na primeira página (sem cursor)
     agora = time.time()
     if cursor is None and _cache["data"] and agora - _cache["ts"] < 60:
         return _cache["data"]
@@ -76,7 +74,6 @@ def listar_fotos(cursor: str = Query(default=None)):
     fotos = [
         {
             "url": r["secure_url"],
-            # Versão menor pra thumbnail (w_400)
             "thumb": r["secure_url"].replace("/upload/", "/upload/w_400,c_fill,q_auto,f_auto/"),
         }
         for r in result.get("resources", [])
@@ -91,6 +88,11 @@ def listar_fotos(cursor: str = Query(default=None)):
         _cache = {"data": data, "ts": agora}
 
     return data
+
+
+@app.get("/galeria")
+def galeria():
+    return FileResponse("static/galeria.html")
 
 
 app.mount("/", StaticFiles(directory="static", html=True), name="static")
