@@ -30,17 +30,57 @@
       margin: 4px 0 2px;
     }
 
-    header p {
-      font-size: 11px;
-      color: #9c7c5e;
-      font-style: italic;
+    header p { font-size: 11px; color: #9c7c5e; font-style: italic; }
+
+    #contador { font-size: 10px; color: #7a6050; margin-top: 6px; }
+
+    /* Barra de seleção */
+    #barra-selecao {
+      display: none;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: #2a1a08;
+      border-bottom: 1px solid rgba(201,168,124,0.3);
+      padding: 10px 16px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
     }
 
-    #contador {
-      font-size: 10px;
-      color: #7a6050;
-      margin-top: 6px;
+    #barra-selecao.visivel { display: flex; }
+
+    #barra-selecao span {
+      font-size: 12px;
+      color: #c9a87c;
     }
+
+    .btn-zip {
+      background: #c9a87c;
+      color: #1a1208;
+      border: none;
+      padding: 7px 16px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-family: 'Georgia', serif;
+      cursor: pointer;
+      transition: background 0.2s;
+      font-weight: bold;
+    }
+
+    .btn-zip:hover { background: #b8916a; }
+    .btn-zip:disabled { background: #555; cursor: not-allowed; color: #888; }
+
+    .btn-cancelar {
+      background: none;
+      border: none;
+      color: #7a6050;
+      font-size: 11px;
+      cursor: pointer;
+      font-family: 'Georgia', serif;
+    }
+
+    .btn-cancelar:hover { color: #c9a87c; }
 
     .grid {
       display: grid;
@@ -54,6 +94,7 @@
       overflow: hidden;
       cursor: pointer;
       background: #2a1f10;
+      position: relative;
     }
 
     .grid-item img {
@@ -67,6 +108,40 @@
 
     .grid-item img.loaded { opacity: 1; }
     .grid-item:hover img { transform: scale(1.05); }
+
+    /* Checkbox de seleção */
+    .grid-item .check {
+      display: none;
+      position: absolute;
+      top: 6px;
+      left: 6px;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      border: 2px solid white;
+      background: rgba(0,0,0,0.4);
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      color: white;
+      transition: all 0.15s;
+    }
+
+    .grid-item:hover .check,
+    .modo-selecao .grid-item .check { display: flex; }
+
+    .grid-item.selecionada .check {
+      background: #c9a87c;
+      border-color: #c9a87c;
+    }
+
+    .grid-item.selecionada::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border: 3px solid #c9a87c;
+      pointer-events: none;
+    }
 
     #sentinel {
       height: 60px;
@@ -94,7 +169,7 @@
 
     #lightbox img {
       max-width: 92vw;
-      max-height: 85vh;
+      max-height: 88vh;
       object-fit: contain;
       border-radius: 2px;
     }
@@ -109,6 +184,27 @@
       background: none;
       border: none;
       line-height: 1;
+    }
+
+    /* Botão selecionar esta no lightbox */
+    #lightbox-selecionar {
+      margin-top: 12px;
+      background: none;
+      border: 1px solid #c9a87c;
+      color: #c9a87c;
+      padding: 6px 18px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-family: 'Georgia', serif;
+      cursor: pointer;
+      letter-spacing: 1px;
+      transition: all 0.2s;
+    }
+
+    #lightbox-selecionar:hover,
+    #lightbox-selecionar.marcada {
+      background: #c9a87c;
+      color: #1a1208;
     }
 
     #lightbox-prev,
@@ -130,23 +226,28 @@
     #lightbox-next { right: 4px; }
     #lightbox-prev:hover, #lightbox-next:hover { opacity: 1; }
 
-    #lightbox-download {
-      margin-top: 12px;
-      font-size: 11px;
-      color: #9c7c5e;
-      text-decoration: none;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-    }
-
-    #lightbox-download:hover { color: #c9a87c; }
-
     #vazio {
       text-align: center;
       padding: 60px 20px;
       color: #7a6050;
       font-style: italic;
       display: none;
+    }
+
+    /* Status download */
+    #status-download {
+      display: none;
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #2a1a08;
+      border: 1px solid rgba(201,168,124,0.4);
+      color: #c9a87c;
+      padding: 10px 20px;
+      border-radius: 20px;
+      font-size: 12px;
+      z-index: 200;
     }
   </style>
 </head>
@@ -159,9 +260,19 @@
     <div id="contador"></div>
   </header>
 
+  <div id="barra-selecao">
+    <span id="txt-selecionadas">0 selecionadas</span>
+    <div style="display:flex;gap:10px;align-items:center">
+      <button class="btn-cancelar" onclick="cancelarSelecao()">Cancelar</button>
+      <button class="btn-zip" id="btn-baixar" onclick="baixarZip()" disabled>↓ Baixar ZIP</button>
+    </div>
+  </div>
+
   <div class="grid" id="grid"></div>
   <div id="vazio">Nenhuma foto ainda ✨</div>
   <div id="sentinel">Carregando...</div>
+
+  <div id="status-download">Preparando ZIP...</div>
 
   <!-- Lightbox -->
   <div id="lightbox">
@@ -169,25 +280,30 @@
     <button id="lightbox-prev">‹</button>
     <img id="lightbox-img" src="" alt=""/>
     <button id="lightbox-next">›</button>
-    <a id="lightbox-download" href="" target="_blank">↓ abrir original</a>
+    <button id="lightbox-selecionar" onclick="selecionarDoLightbox()">Selecionar esta foto</button>
   </div>
 
   <script>
-    const grid      = document.getElementById('grid');
-    const sentinel  = document.getElementById('sentinel');
-    const contador  = document.getElementById('contador');
-    const vazio     = document.getElementById('vazio');
-    const lightbox  = document.getElementById('lightbox');
-    const lbImg     = document.getElementById('lightbox-img');
-    const lbDl      = document.getElementById('lightbox-download');
+    const grid        = document.getElementById('grid');
+    const sentinel    = document.getElementById('sentinel');
+    const contador    = document.getElementById('contador');
+    const vazio       = document.getElementById('vazio');
+    const lightbox    = document.getElementById('lightbox');
+    const lbImg       = document.getElementById('lightbox-img');
+    const lbSel       = document.getElementById('lightbox-selecionar');
+    const barraSelecao = document.getElementById('barra-selecao');
+    const txtSel      = document.getElementById('txt-selecionadas');
+    const btnBaixar   = document.getElementById('btn-baixar');
+    const statusDl    = document.getElementById('status-download');
 
     let nextCursor  = null;
     let loading     = false;
     let ended       = false;
     let allFotos    = [];
     let currentIdx  = 0;
+    let selecionadas = new Set();
+    let modoSelecao = false;
 
-    // Lazy load com IntersectionObserver
     const imgObserver = new IntersectionObserver((entries) => {
       entries.forEach(e => {
         if (e.isIntersecting) {
@@ -199,11 +315,8 @@
       });
     }, { rootMargin: '200px' });
 
-    // Infinite scroll
     const scrollObserver = new IntersectionObserver((entries) => {
-      if (entries[0].isIntersecting && !loading && !ended) {
-        carregarMais();
-      }
+      if (entries[0].isIntersecting && !loading && !ended) carregarMais();
     }, { rootMargin: '300px' });
 
     scrollObserver.observe(sentinel);
@@ -224,19 +337,42 @@
           return;
         }
 
-        data.fotos.forEach((foto, i) => {
-          const idx  = allFotos.length;
+        data.fotos.forEach((foto) => {
+          const idx = allFotos.length;
           allFotos.push(foto);
 
           const div = document.createElement('div');
           div.className = 'grid-item';
+          div.dataset.idx = idx;
+
+          const check = document.createElement('div');
+          check.className = 'check';
+          check.textContent = '✓';
 
           const img = document.createElement('img');
           img.dataset.src = foto.thumb;
           img.alt = `Foto ${idx + 1}`;
-          img.addEventListener('click', () => abrirLightbox(idx));
           imgObserver.observe(img);
 
+          div.addEventListener('click', () => {
+            if (modoSelecao) {
+              toggleSelecao(idx, div);
+            } else {
+              abrirLightbox(idx);
+            }
+          });
+
+          div.addEventListener('long-press', () => ativarModoSelecao(idx, div));
+
+          // Long press pra mobile
+          let pressTimer;
+          div.addEventListener('touchstart', () => {
+            pressTimer = setTimeout(() => ativarModoSelecao(idx, div), 500);
+          });
+          div.addEventListener('touchend', () => clearTimeout(pressTimer));
+          div.addEventListener('touchmove', () => clearTimeout(pressTimer));
+
+          div.appendChild(check);
           div.appendChild(img);
           grid.appendChild(div);
         });
@@ -258,13 +394,107 @@
       }
     }
 
+    function ativarModoSelecao(idx, div) {
+      modoSelecao = true;
+      grid.classList.add('modo-selecao');
+      toggleSelecao(idx, div);
+    }
+
+    function toggleSelecao(idx, div) {
+      if (selecionadas.has(idx)) {
+        selecionadas.delete(idx);
+        div.classList.remove('selecionada');
+      } else {
+        selecionadas.add(idx);
+        div.classList.add('selecionada');
+      }
+      atualizarBarra();
+    }
+
+    function atualizarBarra() {
+      const n = selecionadas.size;
+      if (n > 0) {
+        modoSelecao = true;
+        grid.classList.add('modo-selecao');
+        barraSelecao.classList.add('visivel');
+        txtSel.textContent = `${n} selecionada${n > 1 ? 's' : ''}`;
+        btnBaixar.disabled = false;
+      } else {
+        barraSelecao.classList.remove('visivel');
+        btnBaixar.disabled = true;
+        if (modoSelecao) cancelarSelecao();
+      }
+    }
+
+    function cancelarSelecao() {
+      selecionadas.clear();
+      modoSelecao = false;
+      grid.classList.remove('modo-selecao');
+      barraSelecao.classList.remove('visivel');
+      document.querySelectorAll('.grid-item.selecionada').forEach(el => el.classList.remove('selecionada'));
+      lbSel.classList.remove('marcada');
+      lbSel.textContent = 'Selecionar esta foto';
+    }
+
+    async function baixarZip() {
+      if (selecionadas.size === 0) return;
+
+      const urls = [...selecionadas].map(i => allFotos[i].url);
+
+      btnBaixar.disabled = true;
+      statusDl.style.display = 'block';
+      statusDl.textContent = `Preparando ${urls.length} foto(s)...`;
+
+      try {
+        const res = await fetch('/download-zip', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ urls })
+        });
+
+        if (!res.ok) throw new Error();
+
+        const blob = await res.blob();
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'fotos-casamento.zip';
+        a.click();
+
+        statusDl.textContent = '✓ Download iniciado!';
+        setTimeout(() => { statusDl.style.display = 'none'; }, 3000);
+        cancelarSelecao();
+
+      } catch {
+        statusDl.textContent = '✕ Erro ao gerar ZIP. Tente novamente.';
+        setTimeout(() => { statusDl.style.display = 'none'; }, 3000);
+      } finally {
+        btnBaixar.disabled = false;
+      }
+    }
+
     // Lightbox
     function abrirLightbox(idx) {
       currentIdx = idx;
       lbImg.src = allFotos[idx].url;
-      lbDl.href = allFotos[idx].url;
+      atualizarBotaoLightbox();
       lightbox.classList.add('open');
       document.body.style.overflow = 'hidden';
+    }
+
+    function atualizarBotaoLightbox() {
+      if (selecionadas.has(currentIdx)) {
+        lbSel.classList.add('marcada');
+        lbSel.textContent = '✓ Selecionada';
+      } else {
+        lbSel.classList.remove('marcada');
+        lbSel.textContent = 'Selecionar esta foto';
+      }
+    }
+
+    function selecionarDoLightbox() {
+      const div = document.querySelector(`.grid-item[data-idx="${currentIdx}"]`);
+      toggleSelecao(currentIdx, div);
+      atualizarBotaoLightbox();
     }
 
     function fecharLightbox() {
@@ -276,7 +506,7 @@
     function navLightbox(dir) {
       currentIdx = (currentIdx + dir + allFotos.length) % allFotos.length;
       lbImg.src = allFotos[currentIdx].url;
-      lbDl.href = allFotos[currentIdx].url;
+      atualizarBotaoLightbox();
     }
 
     document.getElementById('lightbox-close').onclick = fecharLightbox;
@@ -286,9 +516,9 @@
 
     document.addEventListener('keydown', e => {
       if (!lightbox.classList.contains('open')) return;
-      if (e.key === 'Escape')      fecharLightbox();
-      if (e.key === 'ArrowLeft')   navLightbox(-1);
-      if (e.key === 'ArrowRight')  navLightbox(1);
+      if (e.key === 'Escape')     fecharLightbox();
+      if (e.key === 'ArrowLeft')  navLightbox(-1);
+      if (e.key === 'ArrowRight') navLightbox(1);
     });
   </script>
 </body>

@@ -1,10 +1,13 @@
 import os
 import time
 import hashlib
+import zipfile
+import io
+import httpx
 from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, StreamingResponse
 from dotenv import load_dotenv
 import cloudinary
 import cloudinary.api
@@ -88,6 +91,33 @@ def listar_fotos(cursor: str = Query(default=None)):
         _cache = {"data": data, "ts": agora}
 
     return data
+
+
+@app.post("/download-zip")
+async def download_zip(body: dict):
+    urls = body.get("urls", [])
+    if not urls or len(urls) > 50:
+        return {"error": "Selecione entre 1 e 50 fotos."}
+
+    zip_buffer = io.BytesIO()
+
+    async with httpx.AsyncClient(timeout=30) as client:
+        with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_STORED) as zf:
+            for i, url in enumerate(urls, 1):
+                try:
+                    res = await client.get(url)
+                    ext = url.split(".")[-1].split("?")[0] or "jpg"
+                    zf.writestr(f"foto_{i:03d}.{ext}", res.content)
+                except Exception:
+                    pass
+
+    zip_buffer.seek(0)
+
+    return StreamingResponse(
+        zip_buffer,
+        media_type="application/zip",
+        headers={"Content-Disposition": "attachment; filename=fotos-casamento.zip"}
+    )
 
 
 @app.get("/galeria")
